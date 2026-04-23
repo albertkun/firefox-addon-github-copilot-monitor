@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Copilot Usage</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- Header -->
+      <header class="header">
+        <img src="../icons/icon-48.svg" alt="" class="logo" width="24" height="24" />
+        <span class="title">Copilot Premium Requests</span>
+      </header>
+
+      <!-- Usage display -->
+      <section class="usage-section" id="usage-section">
+
+        <!-- Battery / progress bar -->
+        <div class="battery-wrap" role="img" aria-label="Usage bar">
+          <div class="battery-body">
+            <div class="battery-fill" id="battery-fill"></div>
+          </div>
+          <div class="battery-tip" aria-hidden="true"></div>
+        </div>
+
+        <!-- Percentage label -->
+        <p class="pct-label" id="pct-label">—</p>
+        <p class="pct-sublabel" id="pct-sublabel">of premium requests used</p>
+
+        <!-- Remaining label -->
+        <p class="remaining-label" id="remaining-label"></p>
+
+        <!-- Reset info -->
+        <p class="reset-info" id="reset-info"></p>
+
+        <!-- Last updated -->
+        <p class="updated-at" id="updated-at"></p>
+      </section>
+
+      <!-- No-data state -->
+      <section class="no-data hidden" id="no-data">
+        <p class="no-data-msg">
+          No usage data yet.<br />
+          Visit your Copilot settings to load it.
+        </p>
+      </section>
+
+      <!-- Actions -->
+      <footer class="footer">
+        <a
+          href="https://github.com/settings/copilot/features"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn-primary"
+          id="open-settings"
+        >Open Settings &amp; Refresh</a>
+      </footer>
+    </div>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
