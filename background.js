@@ -10,9 +10,15 @@
 
 "use strict";
 
-const SETTINGS_URL = "https://github.com/settings/copilot/features";
-const ALARM_NAME   = "copilot-usage-refresh";
-const ALARM_PERIOD = 60; // minutes
+const STORAGE_KEY   = "copilotUsage";
+const SETTINGS_URL  = "https://github.com/settings/copilot/features";
+const ALARM_NAME    = "copilot-usage-refresh";
+const ALARM_PERIOD  = 60; // minutes
+
+// Badge colour gradient thresholds and channel maximums
+const BADGE_MID_THRESHOLD = 50;   // usage % at which red channel peaks / green starts to fall
+const BADGE_MAX_RED       = 255;  // maximum red channel value
+const BADGE_MAX_GREEN     = 180;  // maximum green channel value (kept below 255 for warmth)
 
 // ── On install / update: set up the periodic alarm
 browser.runtime.onInstalled.addListener(() => {
@@ -55,14 +61,20 @@ function updateBadge(usedPct) {
   const text = usedPct + "%";
   browser.browserAction.setBadgeText({ text });
   // Color shifts from green → amber → red as usage rises
-  const r = usedPct >= 50 ? 255 : Math.round((usedPct / 50) * 255);
-  const g = usedPct <= 50 ? 180 : Math.round(((100 - usedPct) / 50) * 180);
+  const r = usedPct >= BADGE_MID_THRESHOLD
+    ? BADGE_MAX_RED
+    : Math.round((usedPct / BADGE_MID_THRESHOLD) * BADGE_MAX_RED);
+  const g = usedPct <= BADGE_MID_THRESHOLD
+    ? BADGE_MAX_GREEN
+    : Math.round(((100 - usedPct) / (100 - BADGE_MID_THRESHOLD)) * BADGE_MAX_GREEN);
   browser.browserAction.setBadgeBackgroundColor({ color: [r, g, 0, 255] });
 }
 
 // ── Restore badge on browser startup from stored data
-browser.storage.local.get("copilotUsage").then((data) => {
-  if (data.copilotUsage) {
-    updateBadge(data.copilotUsage.used);
+browser.storage.local.get(STORAGE_KEY).then((data) => {
+  if (data[STORAGE_KEY]) {
+    updateBadge(data[STORAGE_KEY].used);
   }
+}).catch((err) => {
+  console.error("[Copilot Monitor] Failed to read stored usage on startup:", err);
 });

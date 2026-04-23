@@ -48,7 +48,7 @@ function timeAgo(ts) {
 
 /** Render data or the no-data state. */
 function render(data) {
-  if (!data || data.used === undefined) {
+  if (!data || typeof data.used !== "number" || isNaN(data.used)) {
     usageSection.classList.add("hidden");
     noDataSection.classList.remove("hidden");
     return;
@@ -88,6 +88,9 @@ function render(data) {
 // ── Load data on popup open ───────────────────────────────────────────────────
 browser.storage.local.get(STORAGE_KEY).then((result) => {
   render(result[STORAGE_KEY] || null);
+}).catch((err) => {
+  console.error("[Copilot Monitor] Failed to load usage from storage:", err);
+  render(null);
 });
 
 // ── Live update if storage changes while popup is open ───────────────────────
@@ -110,5 +113,7 @@ openSettingsBtn.addEventListener("click", (e) => {
       browser.tabs.create({ url: SETTINGS_URL });
     }
     window.close();
+  }).catch((err) => {
+    console.error("[Copilot Monitor] Failed to open settings tab:", err);
   });
 });

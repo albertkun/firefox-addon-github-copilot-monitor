@@ -72,6 +72,8 @@ function extractUsage() {
   }
 
   // ── Strategy 4: broad full-page text scan as last resort
+  // 300 chars is wide enough to span the heading + following stat line, yet
+  // narrow enough to avoid matching an unrelated percentage elsewhere on the page.
   const bodyText = document.body.innerText || document.body.textContent || "";
   const match = bodyText.match(/premium\s+requests[\s\S]{0,300}?(\d{1,3})\s*%/i);
   if (match) {
@@ -134,7 +136,10 @@ function saveUsage(usage) {
 
 /** Attempt extraction; retry up to MAX_RETRIES times for dynamic pages. */
 let retryCount = 0;
+let retryPending = false; // guard against concurrent retry loops
+
 function tryExtract() {
+  retryPending = false;
   const usage = extractUsage();
   if (usage !== null) {
     saveUsage(usage);
@@ -142,15 +147,19 @@ function tryExtract() {
   }
   if (retryCount < MAX_RETRIES) {
     retryCount++;
+    retryPending = true;
     setTimeout(tryExtract, RETRY_INTERVAL_MS);
   }
 }
 
 tryExtract();
 
-// Also re-run whenever the DOM mutates significantly (GitHub SPA navigation)
+// Also re-run whenever the DOM mutates significantly (GitHub SPA navigation).
+// Only schedule a new extraction if one is not already pending.
 const observer = new MutationObserver(() => {
-  retryCount = 0;
-  tryExtract();
+  if (!retryPending) {
+    retryCount = 0;
+    tryExtract();
+  }
 });
 observer.observe(document.body, { childList: true, subtree: true });
