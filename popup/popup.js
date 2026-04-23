@@ -20,7 +20,6 @@ const SETTINGS_URL   = "https://github.com/settings/copilot/features";
 // ── DOM refs ──────────────────────────────────────────────────────────────────
 const batteryFill    = document.getElementById("battery-fill");
 const pctLabel       = document.getElementById("pct-label");
-const pctSublabel    = document.getElementById("pct-sublabel");
 const remainingLabel = document.getElementById("remaining-label");
 const resetInfo      = document.getElementById("reset-info");
 const updatedAtEl    = document.getElementById("updated-at");
@@ -103,7 +102,7 @@ browser.storage.onChanged.addListener((changes, area) => {
 // ── "Open Settings & Refresh" button ────────────────────────────────────────
 openSettingsBtn.addEventListener("click", (e) => {
   e.preventDefault();
-  browser.tabs.query({ url: SETTINGS_URL }).then((tabs) => {
+  browser.tabs.query({ url: `${SETTINGS_URL}*` }).then((tabs) => {
     if (tabs.length > 0) {
       // Activate the existing tab and reload it
       browser.tabs.update(tabs[0].id, { active: true });

@@ -2,10 +2,10 @@
  * background.js — event-page background script
  *
  * Responsibilities:
- *  • Inject the content script into already-open copilot settings tabs on install.
+ *  • Set up the periodic refresh alarm on install/update.
  *  • Listen for messages from the content script (future use / explicit refresh).
- *  • Provide an alarm-based periodic refresh so the popup always has recent data
- *    even without the user visiting the settings page.
+ *  • When the alarm fires, reload any already-open copilot settings tabs so the
+ *    content script can refresh stored usage data.
  */
 
 "use strict";
@@ -33,7 +33,7 @@ browser.runtime.onInstalled.addListener(() => {
 browser.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name !== ALARM_NAME) return;
 
-  const tabs = await browser.tabs.query({ url: SETTINGS_URL });
+  const tabs = await browser.tabs.query({ url: `${SETTINGS_URL}*` });
   if (tabs.length > 0) {
     // Settings page is already open — reload it to trigger the content script
     for (const tab of tabs) {
@@ -54,19 +54,20 @@ browser.runtime.onMessage.addListener((message) => {
 
 /** Update the toolbar badge with the current usage percentage. */
 function updateBadge(usedPct) {
-  if (usedPct === undefined || usedPct === null) {
+  if (usedPct === undefined || usedPct === null || !Number.isFinite(usedPct)) {
     browser.browserAction.setBadgeText({ text: "" });
     return;
   }
-  const text = usedPct + "%";
+  const clampedUsedPct = Math.min(100, Math.max(0, usedPct));
+  const text = clampedUsedPct + "%";
   browser.browserAction.setBadgeText({ text });
   // Color shifts from green → amber → red as usage rises
-  const r = usedPct >= BADGE_MID_THRESHOLD
+  const r = clampedUsedPct >= BADGE_MID_THRESHOLD
     ? BADGE_MAX_RED
-    : Math.round((usedPct / BADGE_MID_THRESHOLD) * BADGE_MAX_RED);
-  const g = usedPct <= BADGE_MID_THRESHOLD
+    : Math.round((clampedUsedPct / BADGE_MID_THRESHOLD) * BADGE_MAX_RED);
+  const g = clampedUsedPct <= BADGE_MID_THRESHOLD
     ? BADGE_MAX_GREEN
-    : Math.round(((100 - usedPct) / (100 - BADGE_MID_THRESHOLD)) * BADGE_MAX_GREEN);
+    : Math.round(((100 - clampedUsedPct) / (100 - BADGE_MID_THRESHOLD)) * BADGE_MAX_GREEN);
   browser.browserAction.setBadgeBackgroundColor({ color: [r, g, 0, 255] });
 }
 

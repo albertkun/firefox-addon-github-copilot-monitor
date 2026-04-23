@@ -43,7 +43,12 @@ function extractUsage() {
     const now   = el.getAttribute("aria-valuenow");
     const max   = el.getAttribute("aria-valuemax") || "100";
     if (label.includes("premium") && now !== null) {
-      return { used: Math.round((parseFloat(now) / parseFloat(max)) * 100), total: null };
+      const nowValue = parseFloat(now);
+      const maxValue = parseFloat(max);
+      if (Number.isFinite(nowValue) && Number.isFinite(maxValue) && maxValue > 0) {
+        const used = Math.max(0, Math.min(100, (nowValue / maxValue) * 100));
+        return { used: Math.round(used), total: null };
+      }
     }
   }
 
@@ -131,7 +136,9 @@ function saveUsage(usage) {
     updatedAt: Date.now(),
     resetInfo: extractResetInfo(),
   };
-  browser.storage.local.set({ [STORAGE_KEY]: payload });
+  return browser.storage.local.set({ [STORAGE_KEY]: payload }).catch((err) => {
+    console.error("[Copilot Monitor] Failed to persist usage data:", err);
+  });
 }
 
 /** Attempt extraction; retry up to MAX_RETRIES times for dynamic pages. */
