@@ -1,0 +1,1 @@
+# firefox-addon-github-copilot-monitor
