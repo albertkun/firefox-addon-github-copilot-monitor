@@ -99,7 +99,7 @@ function render(data) {
   }
 
   const pct       = Math.min(100, Math.max(0, data.used));
-  const remaining = Math.max(0, 100 - pct);
+  const remaining = 100 - pct;
 
   // Show usage section, hide no-data
   usageSection.classList.remove("hidden");

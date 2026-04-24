@@ -105,7 +105,7 @@ async function refreshUsage() {
     updateBadge(usage.used);
     return true;
   } catch (err) {
-    console.warn("[Copilot Monitor] Silent refresh failed, falling back:", err && err.message);
+    console.warn("[Copilot Monitor] Silent refresh failed, falling back:", err?.message ?? err);
     await fallbackReloadOpenTab();
     return false;
   }

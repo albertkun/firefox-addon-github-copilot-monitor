@@ -13,9 +13,14 @@
 (function (root) {
   /**
    * Regex matching a percentage (integer or decimal), e.g. "12", "12.3", "100".
-   * Stored as a string so we can reuse it in multiple places.
    */
   const PCT_RE = /(\d{1,3}(?:\.\d+)?)\s*%/;
+
+  /**
+   * Matches "premium requests" followed (within 300 chars) by a percentage.
+   * Used for the last-resort full-page text scan.
+   */
+  const PREMIUM_PCT_RE = /premium\s+requests[\s\S]{0,300}?(\d{1,3}(?:\.\d+)?)\s*%/i;
 
   /**
    * Extract the Premium-requests usage percentage from a document.
@@ -75,7 +80,7 @@
 
     // ── Strategy 4: broad full-page text scan as last resort.
     const bodyText = getBlockText(doc.body);
-    const m = bodyText.match(new RegExp("premium\\s+requests[\\s\\S]{0,300}?" + PCT_RE.source, "i"));
+    const m = bodyText.match(PREMIUM_PCT_RE);
     if (m) {
       const n = parseFloat(m[1]);
       if (Number.isFinite(n)) return { used: roundPct(clamp(n, 0, 100)) };

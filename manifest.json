@@ -29,7 +29,6 @@
   "permissions": [
     "storage",
     "alarms",
-    "https://github.com/settings/copilot/features*",
     "https://github.com/settings/copilot/*"
   ],
   "browser_specific_settings": {
