@@ -1,0 +1,53 @@
+name: Build Firefox Addon
+
+on:
+  push:
+    branches: ["main"]
+    tags: ["v*"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Read version from manifest
+        id: version
+        run: |
+          VERSION=$(jq -r '.version' manifest.json)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Validate tag matches manifest version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          MANIFEST_VERSION="${{ steps.version.outputs.version }}"
+          if [ "$TAG_VERSION" != "$MANIFEST_VERSION" ]; then
+            echo "Tag version '$TAG_VERSION' does not match manifest version '$MANIFEST_VERSION'" >&2
+            exit 1
+          fi
+      - name: Package addon
+        run: |
+          zip -r "github-copilot-monitor-${{ steps.version.outputs.version }}.zip" \
+            manifest.json \
+            background.js \
+            content.js \
+            popup/ \
+            icons/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: github-copilot-monitor-${{ steps.version.outputs.version }}
+          path: github-copilot-monitor-${{ steps.version.outputs.version }}.zip
+          if-no-files-found: error
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: github-copilot-monitor-${{ steps.version.outputs.version }}.zip
