@@ -47,6 +47,9 @@ source folder:
 
 - **From a GitHub Release:** download the `github-copilot-monitor-<version>.zip`
   asset attached to the release. This file is the installable extension.
+  Releases are published automatically by CI on every push to `main`, tagged
+  `v<manifest.version>` — so the latest release always matches the current
+  `manifest.json` version.
 - **From an Actions run:** download the `github-copilot-monitor-<version>`
   artifact. GitHub Actions always delivers artifacts wrapped in a `.zip`, so
   what you download already **is** the installable archive — don't re-zip it

@@ -8,6 +8,9 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,6 +33,7 @@ jobs:
             echo "Tag version '$TAG_VERSION' does not match manifest version '$MANIFEST_VERSION'" >&2
             exit 1
           fi
+
       - name: Upload artifact
         # Upload the raw extension files (not a pre-built zip). GitHub's
         # upload-artifact action always wraps the uploaded path in a zip when
@@ -48,8 +52,18 @@ jobs:
             icons/**
           if-no-files-found: error
 
+      # Determine whether this run should publish a GitHub Release. We publish:
+      #   - on every push to the default branch (auto-release using the
+      #     manifest version as the tag), and
+      #   - on pushes of v* tags (manual release cuts).
+      # Pull requests and other events do not publish.
+      - name: Decide whether to publish a release
+        id: release_decision
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+        run: echo "publish=true" >> "$GITHUB_OUTPUT"
+
       - name: Package addon for release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: steps.release_decision.outputs.publish == 'true'
         run: |
           zip -r "github-copilot-monitor-${{ steps.version.outputs.version }}.zip" \
             manifest.json \
@@ -58,8 +72,15 @@ jobs:
             popup/ \
             icons/
 
-      - name: Create GitHub Release
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Create or update GitHub Release
+        if: steps.release_decision.outputs.publish == 'true'
         uses: softprops/action-gh-release@v2
         with:
+          # Use the manifest version as the release tag so the zip is always
+          # attached to a predictable v<version> release. softprops/action-gh-release
+          # will create the tag/release if it doesn't exist and update the
+          # attached asset if it does.
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
           files: github-copilot-monitor-${{ steps.version.outputs.version }}.zip
+          fail_on_unmatched_files: true
