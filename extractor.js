@@ -38,10 +38,21 @@
     // ── Strategy 1: <meter> / <progress> with a "premium" label.
     for (const el of doc.querySelectorAll("meter, progress")) {
       const label = getAccessibleLabel(doc, el).toLowerCase();
-      const value = parseFloat(el.getAttribute("value") ?? "");
-      const max   = parseFloat(el.getAttribute("max")   ?? "100");
-      if (label.includes("premium") && !isNaN(value)) {
-        return { used: roundPct((value / (max || 100)) * 100) };
+      const value =
+        typeof el.value === "number" && Number.isFinite(el.value)
+          ? el.value
+          : parseFloat(el.getAttribute("value") ?? "");
+      const max =
+        typeof el.max === "number" && Number.isFinite(el.max)
+          ? el.max
+          : parseFloat(el.getAttribute("max") ?? "1");
+      if (
+        label.includes("premium") &&
+        Number.isFinite(value) &&
+        Number.isFinite(max) &&
+        max > 0
+      ) {
+        return { used: roundPct((value / max) * 100) };
       }
     }
 
