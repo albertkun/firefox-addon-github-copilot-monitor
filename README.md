@@ -12,8 +12,10 @@ to see what percentage of requests have been used or remain.
 |---|---|
 | 🔋 Battery bar | Fills left-to-right as usage rises (green → amber → red) |
 | % badge | Toolbar icon badge shows your current usage % |
+| Silent background refresh | The addon fetches your usage in the background using your existing GitHub session — no tab needs to stay open |
+| Decimal precision | Correctly reads fractional percentages (e.g. `12.3%`) |
+| Reset countdown | Shows how many days until your next monthly reset |
 | Live updates | Popup updates in real-time while the GitHub settings page is open |
-| Reset info | Displays the monthly reset message from GitHub |
 | One-click refresh | "Open Settings & Refresh" button opens / reloads the settings page |
 
 ---
@@ -24,9 +26,12 @@ to see what percentage of requests have been used or remain.
    `https://github.com/settings/copilot/features`.
 2. When you visit that page the script reads the *Premium requests* usage
    percentage from the DOM and saves it to extension storage.
-3. The **popup** reads from storage and renders the battery bar + labels.
-4. A **background alarm** reloads the settings page every 60 minutes if it is
-   already open in a tab (passive refresh — no new tabs are opened).
+3. The **popup** reads from storage and renders the battery bar, labels,
+   and a countdown in days until the monthly reset.
+4. A **background alarm** refreshes your usage every hour by silently
+   fetching the settings page using your existing GitHub session cookies
+   (no OAuth required). If the fetch fails (e.g. you're signed out), the
+   addon falls back to reloading any open settings tab.
 
 ---
 
@@ -67,8 +72,9 @@ top level — open the zip and confirm you aren't looking at a zip-of-a-zip.
 ```
 firefox-addon-github-copilot-monitor/
 ├── manifest.json       Extension manifest (MV2)
-├── background.js       Event-page background script
+├── background.js       Event-page background script (silent fetch + badge)
 ├── content.js          Content script (reads usage from GitHub DOM)
+├── extractor.js        Shared usage-extraction logic
 ├── popup/
 │   ├── popup.html      Popup markup
 │   ├── popup.css       Popup styles
@@ -86,4 +92,4 @@ firefox-addon-github-copilot-monitor/
 |---|---|
 | `storage` | Persist usage data between sessions |
 | `alarms` | Periodic background refresh |
-| `https://github.com/settings/copilot/features*` | Read content from the settings page |
+| `https://github.com/settings/copilot/*` | Read content from the Copilot settings pages and `fetch()` them silently in the background to refresh usage without requiring an open tab |

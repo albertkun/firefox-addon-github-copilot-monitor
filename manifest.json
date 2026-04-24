@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "GitHub Copilot Usage Monitor",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Monitor your GitHub Copilot premium request usage at a glance.",
   "icons": {
     "48": "icons/icon-48.svg",
@@ -16,20 +16,21 @@
     "default_title": "Copilot Usage"
   },
   "background": {
-    "scripts": ["background.js"],
+    "scripts": ["extractor.js", "background.js"],
     "persistent": false
   },
   "content_scripts": [
     {
       "matches": ["https://github.com/settings/copilot/features*"],
-      "js": ["content.js"],
+      "js": ["extractor.js", "content.js"],
       "run_at": "document_idle"
     }
   ],
   "permissions": [
     "storage",
     "alarms",
-    "https://github.com/settings/copilot/features*"
+    "https://github.com/settings/copilot/features*",
+    "https://github.com/settings/copilot/*"
   ],
   "browser_specific_settings": {
     "gecko": {

@@ -48,6 +48,7 @@ jobs:
             manifest.json
             background.js
             content.js
+            extractor.js
             popup/**
             icons/**
           if-no-files-found: error
@@ -69,6 +70,7 @@ jobs:
             manifest.json \
             background.js \
             content.js \
+            extractor.js \
             popup/ \
             icons/
 
