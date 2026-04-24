@@ -30,7 +30,26 @@ jobs:
             echo "Tag version '$TAG_VERSION' does not match manifest version '$MANIFEST_VERSION'" >&2
             exit 1
           fi
-      - name: Package addon
+      - name: Upload artifact
+        # Upload the raw extension files (not a pre-built zip). GitHub's
+        # upload-artifact action always wraps the uploaded path in a zip when
+        # you download it from the Actions UI, so uploading a pre-built .zip
+        # would produce a zip-of-a-zip and Firefox would reject the download
+        # with "does not contain a valid manifest". By uploading the raw files
+        # here, the artifact download IS a directly installable .xpi/.zip.
+        uses: actions/upload-artifact@v4
+        with:
+          name: github-copilot-monitor-${{ steps.version.outputs.version }}
+          path: |
+            manifest.json
+            background.js
+            content.js
+            popup/**
+            icons/**
+          if-no-files-found: error
+
+      - name: Package addon for release
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
           zip -r "github-copilot-monitor-${{ steps.version.outputs.version }}.zip" \
             manifest.json \
@@ -38,13 +57,6 @@ jobs:
             content.js \
             popup/ \
             icons/
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: github-copilot-monitor-${{ steps.version.outputs.version }}
-          path: github-copilot-monitor-${{ steps.version.outputs.version }}.zip
-          if-no-files-found: error
 
       - name: Create GitHub Release
         if: startsWith(github.ref, 'refs/tags/v')
