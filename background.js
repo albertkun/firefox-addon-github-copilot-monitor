@@ -13,7 +13,7 @@
 const STORAGE_KEY   = "copilotUsage";
 const SETTINGS_URL  = "https://github.com/settings/copilot/features";
 const ALARM_NAME    = "copilot-usage-refresh";
-const ALARM_PERIOD  = 60; // minutes
+const ALARM_PERIOD  = 100; // minutes
 
 // Badge colour gradient thresholds and channel maximums
 const BADGE_MID_THRESHOLD = 50;   // usage % at which red channel peaks / green starts to fall
