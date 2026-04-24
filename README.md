@@ -40,6 +40,26 @@ to see what percentage of requests have been used or remain.
    initial data.
 6. Click the extension icon in the toolbar to see your usage.
 
+### Installing the packaged `.zip` from a Release or CI build
+
+If you want to install the packaged `.zip` directly instead of loading the
+source folder:
+
+- **From a GitHub Release:** download the `github-copilot-monitor-<version>.zip`
+  asset attached to the release. This file is the installable extension.
+  Releases are published automatically by CI on every push to `main`, tagged
+  `v<manifest.version>` — so the latest release always matches the current
+  `manifest.json` version.
+- **From an Actions run:** download the `github-copilot-monitor-<version>`
+  artifact. GitHub Actions always delivers artifacts wrapped in a `.zip`, so
+  what you download already **is** the installable archive — don't re-zip it
+  and don't try to install the outer wrapper if you unzipped it first.
+
+Then in Firefox, open `about:debugging` → **This Firefox** → **Load Temporary
+Add-on…** and select the `.zip`. If Firefox reports *"does not contain a valid
+manifest"*, the archive you selected does not have `manifest.json` at its
+top level — open the zip and confirm you aren't looking at a zip-of-a-zip.
+
 ---
 
 ## File Structure
